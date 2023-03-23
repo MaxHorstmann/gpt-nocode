@@ -48,7 +48,11 @@
     <section class="section">
       <div class="columns">
         <div class="column">
-          <h1>Describe your data model!<h1>
+          <div id="history">
+          </div>
+          <form onsubmit="submitUserInput(event)">
+            <input id="chat-input" class="input is-rounded" type="text" placeholder="Describe your data model....">
+          </form>
         </div>
         <div class="column">
           <article class="message">
@@ -63,5 +67,6 @@
         </div>
       </div>
     </section>
+    <script src="all.js"></script>
   </body>
 </html>
