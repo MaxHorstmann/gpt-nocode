@@ -1,6 +1,11 @@
-const API_KEY = ""
+const API_KEY = "";
 // TODO ^^ inject an OpenAI key here: https://platform.openai.com/account/api-keys
-var messages = []
+const systemMessageContent = "Your are a unicorn. Respond accordingly.";
+const sytemMessages = [{
+	role: "system",
+	content: systemMessageContent
+}];
+var messages = [];
 
 
 function submitUserInput(e) {
@@ -31,7 +36,7 @@ function callGPT() {
 	};
 	body = { 
 		model: "gpt-3.5-turbo",
-		messages: messages
+		messages: sytemMessages.concat(messages)
 	 }
 	xhttp.open("POST", url, true);
 	xhttp.setRequestHeader("Content-Type", "application/json");
@@ -43,9 +48,17 @@ function update() {
 	var history = document.getElementById("history")
 	history.innerHTML = ""
 	for (var i=0; i<messages.length; i++) {
+		var message = messages[i];
+		var article = document.createElement("article");
+		article.classList.add("message")
+		if (message.role == "assistant") {
+			article.classList.add("is-link")
+		}
 		var div = document.createElement("div");
-		div.appendChild(document.createTextNode(messages[i].role + ": " + messages[i].content));
-		history.appendChild(div)
+		div.setAttribute("class", "message-body")
+		article.appendChild(div)
+		div.appendChild(document.createTextNode(message.content));
+		history.appendChild(article);
 	}
 }
 
