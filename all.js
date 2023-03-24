@@ -1,24 +1,31 @@
-const API_KEY = "";
+const API_KEY = "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";
 // TODO ^^ inject an OpenAI key here: https://platform.openai.com/account/api-keys
 const systemMessageContent = `
 Your are a technical product manager, gathering requirements for an app.
 Right now, you are discussing the data model with the user. 
 I want you to prefix every response with a machine-readable representation
 of what you think the data model looks like, based on the conversation so far,
-embedded in curly braces.
-For example, if the user starts out by saying "My data model should track customers
-and the calls I'm having with them", then your response could look like this:
-"{ Customers: Id int, Name string; Calls: Id int, CustomerId int, DateTime Dateatime } 
-Ok here's a starting point: I created Customers and Calls entities. Does this look ok?"
-Make sure that every response contains both the machine-readable  current data model,
-in curly braces, followed by a human-readable response to keep the conversation moving.`
+as a JSON array, followed by ###. Each object in the array has two properties, "Name" and "Attributes".
+"Attributes" is itself an array of strings. 
+
+Make sure that every response always begins with the machine-readable data model as a JSON array, 
+followed by ###, followed by a human-readable response to keep the conversation moving.
+
+Make sure your response never begins with anything human-readable. The first part of
+your response must always be the JSON array, followed by ###. Only after that, include
+anything human-readable.
+
+Make sure the JSON array is not embedded in an object. So your response should always start with [.
+`
+
+
 
 const sytemMessages = [{
 	role: "system",
 	content: systemMessageContent
 }];
 var messages = [];
-var dataModel = "{ TODO data model }";
+var dataModelRaw = "[]";
 
 function submitUserInput(e) {
 	e.preventDefault();
@@ -42,10 +49,12 @@ function callGPT() {
 	    if (this.readyState == 4 && this.status == 200) {
 	    	var response = JSON.parse(xhttp.responseText);
 	    	var message = response.choices[0].message;
-	    	var indexOfClosingCurlyBrace = message.content.indexOf("}");
-	    	if (indexOfClosingCurlyBrace>0) {
-	    		dataModel = message.content.substring(0, indexOfClosingCurlyBrace+1);
-	    		message.content = message.content.substring(indexOfClosingCurlyBrace+1);
+	    	console.log(message.content);
+	    	const terminator="###"
+	    	var indexOfTerminator = message.content.indexOf(terminator);
+	    	if (indexOfTerminator>0) {
+	    		dataModelRaw = message.content.substring(0, indexOfTerminator);
+	    		message.content = message.content.substring(indexOfTerminator+terminator.length);
 	    	}
 	    	messages.push(message);
 	    	updateChat();
@@ -81,8 +90,30 @@ function updateChat() {
 }
 
 function updateModel() {
-	var dataModelText = document.getElementById("data-model-text")
-	dataModelText.innerHTML = dataModel;
+	var dataModelEntities = document.getElementById("data-model-entities")
+	dataModelEntities.innerHTML = ""
+	var dataModel = JSON.parse(dataModelRaw);
+	for (var i=0; i<dataModel.length; i++) {
+		var entity = dataModel[i];
+		var article = document.createElement("article");
+		article.classList.add("message")
+		var divHeader= document.createElement("div");
+		divHeader.setAttribute("class", "message-header")
+		article.appendChild(divHeader)
+		divHeader.appendChild(document.createTextNode(entity.Name));
+		var divBody= document.createElement("div");
+		divBody.setAttribute("class", "message-body")
+		article.appendChild(divBody)
+		var ul = document.createElement("ul");
+		divBody.appendChild(ul);
+		for (var j=0; j<entity.Attributes.length; j++) {
+			console.log(entity.Attributes[j]);
+			var li = document.createElement("li");
+			li.appendChild(document.createTextNode(entity.Attributes[j]));
+			ul.appendChild(li)
+		}
+		dataModelEntities.appendChild(article);
+	}	
 }
 
 
