@@ -33,6 +33,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Inject token 
+        run: |
+          cat all.js | sed 's/INJECT_API_KEY/test79211/g' > all2.js
+          rm all.js 
+          mv all2.js all.js
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
