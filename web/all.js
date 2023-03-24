@@ -1,12 +1,24 @@
 const API_KEY = "";
 // TODO ^^ inject an OpenAI key here: https://platform.openai.com/account/api-keys
-const systemMessageContent = "Your are a unicorn. Respond accordingly.";
+const systemMessageContent = `
+Your are a technical product manager, gathering requirements for an app.
+Right now, you are discussing the data model with the user. 
+I want you to prefix every response with a machine-readable representation
+of what you think the data model looks like, based on the conversation so far,
+embedded in curly braces.
+For example, if the user starts out by saying "My data model should track customers
+and the calls I'm having with them", then your response could look like this:
+"{ Customers: Id int, Name string; Calls: Id int, CustomerId int, DateTime Dateatime } 
+Ok here's a starting point: I created Customers and Calls entities. Does this look ok?"
+Make sure that every response contains both the machine-readable  current data model,
+in curly braces, followed by a human-readable response to keep the conversation moving.`
+
 const sytemMessages = [{
 	role: "system",
 	content: systemMessageContent
 }];
 var messages = [];
-
+var dataModel = "{ TODO data model }";
 
 function submitUserInput(e) {
 	e.preventDefault();
@@ -19,7 +31,7 @@ function submitUserInput(e) {
 	messages.push(message);
 	input.value = "";
 	callGPT();
-	update();
+	updateChat();
 	return false;
 }
 
@@ -30,8 +42,14 @@ function callGPT() {
 	    if (this.readyState == 4 && this.status == 200) {
 	    	var response = JSON.parse(xhttp.responseText);
 	    	var message = response.choices[0].message;
+	    	var indexOfClosingCurlyBrace = message.content.indexOf("}");
+	    	if (indexOfClosingCurlyBrace>0) {
+	    		dataModel = message.content.substring(0, indexOfClosingCurlyBrace+1);
+	    		message.content = message.content.substring(indexOfClosingCurlyBrace+1);
+	    	}
 	    	messages.push(message);
-	    	update();
+	    	updateChat();
+	    	updateModel()
 	    }
 	};
 	body = { 
@@ -44,7 +62,7 @@ function callGPT() {
 	xhttp.send(JSON.stringify(body));
 }
 
-function update() {
+function updateChat() {
 	var history = document.getElementById("history")
 	history.innerHTML = ""
 	for (var i=0; i<messages.length; i++) {
@@ -60,6 +78,11 @@ function update() {
 		div.appendChild(document.createTextNode(message.content));
 		history.appendChild(article);
 	}
+}
+
+function updateModel() {
+	var dataModelText = document.getElementById("data-model-text")
+	dataModelText.innerHTML = dataModel;
 }
 
 
