@@ -1,4 +1,4 @@
-const API_KEY = "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";
+const API_KEY = "INJECT_API_KEY";
 // TODO ^^ inject an OpenAI key here: https://platform.openai.com/account/api-keys
 const systemMessageContent = `
 Your are a technical product manager, gathering requirements for an app.
