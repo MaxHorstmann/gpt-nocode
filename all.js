@@ -1,5 +1,5 @@
 const API_KEY = "INJECT_API_KEY";
-// TODO ^^ inject an OpenAI key here: https://platform.openai.com/account/api-keys
+// https://platform.openai.com/account/api-keys
 const systemMessageContent = `
 Your are a technical product manager, gathering requirements for an app.
 Right now, you are discussing the data model with the user. 
