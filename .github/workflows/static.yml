@@ -35,7 +35,7 @@ jobs:
         uses: actions/configure-pages@v3
       - name: Inject token 
         run: |
-          cat all.js | sed 's/INJECT_API_KEY/test79211/g' > all2.js
+          cat all.js | sed 's/INJECT_API_KEY/${{secrets.OPENAI_API_KEY}}/g' > all2.js
           rm all.js 
           mv all2.js all.js
       - name: Upload artifact
